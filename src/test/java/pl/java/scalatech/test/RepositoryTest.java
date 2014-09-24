@@ -20,10 +20,9 @@ import pl.java.scalatech.domain.User;
 import pl.java.scalatech.repository.UserRepository;
 
 /**
- * @author Sławomir Borowiec 
- * Module name : metaModel
- * Creating time :  24 wrz 2014 14:04:49
- 
+ * @author Sławomir Borowiec
+ *         Module name : metaModel
+ *         Creating time : 24 wrz 2014 14:04:49
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { DsConfig.class })
@@ -40,7 +39,6 @@ public class RepositoryTest {
         userRepository.save(User.builder().login("aga").name("borowiec").salary(new BigDecimal(450)).build());
         userRepository.save(User.builder().login("mike").name("tyson").salary(new BigDecimal(670)).build());
     }
-
 
     @Test
     public void shouldSaveAndRetrieveRecords() {
