@@ -41,9 +41,6 @@ public class RepositoryTest {
         userRepository.save(User.builder().login("mike").name("tyson").salary(new BigDecimal(670)).build());
     }
 
-    @Test
-    public void shouldRepositoryBootstrap() {
-    }
 
     @Test
     public void shouldSaveAndRetrieveRecords() {
