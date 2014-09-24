@@ -1,0 +1,112 @@
+import java.util.logging.Logger;
+
+buildscript {
+    repositories {
+        maven { url "http://repo.spring.io/libs-milestone" }
+        mavenLocal()
+    }
+    dependencies { classpath("org.springframework.boot:spring-boot-gradle-plugin:1.1.6.RELEASE") }
+}
+
+apply plugin: 'java'
+apply plugin: "groovy"
+apply plugin: 'eclipse'
+apply plugin: 'build-dashboard'
+apply plugin: 'codenarc'
+apply from: './properties.gradle'
+apply plugin: 'spring-boot'
+apply plugin: 'war'
+
+sourceCompatibility = 1.8
+
+jar {
+    baseName = 'metamodel-poc'
+    version = '0.1.0'
+}
+
+war {
+    baseName = 'metamodel-poc'
+    version =  '0.1.0'
+}
+
+sourceSets {
+    intTest
+    generated.java.srcDirs=['src/main/generated']
+    main {
+        java { srcDir 'src/main/java' }
+        resources { srcDir 'src/main/resources' }
+    }
+    test {
+        java { srcDir 'src/test/java' }
+        resources { srcDir 'src/test/resources' }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url "http://repo.spring.io/libs-snapshot" }
+    maven { url "http://repo.codahale.com/" }
+}
+
+configurations {
+    providedRuntime
+    jpametamodel
+}
+
+dependencies {
+    jpametamodel ("org.hibernate:hibernate-jpamodelgen:4.3.1.Final")
+
+    compile ("org.codehaus.groovy:groovy:${groovyVersion}")
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.boot:spring-boot-starter-data-jpa")
+    compile("org.springframework.boot:spring-boot-starter-logging")
+    compile ("org.springframework:spring-core:${springVersion}")
+    compile ("org.springframework:spring-beans:${springVersion}")
+    compile ("org.springframework:spring-context:${springVersion}")
+    compile ("org.springframework:spring-orm:${springVersion}")
+    compile ("org.springframework:spring-tx:${springVersion}")
+    compile ("org.springframework:spring-aop:${springVersion}")
+
+    compile ("org.springframework:spring-aspects:${springVersion}")
+
+    compile("org.projectlombok:lombok:${lombokVersion}")
+    compile("com.google.guava:guava:${guavaVersion}")
+
+    //  providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+    runtime("org.hsqldb:hsqldb:${hsqldbVersion}")
+    testCompile("org.hamcrest:hamcrest-all:$hamcrestVersion")
+    compile("org.mockito:mockito-all:$mockitoVersion")
+    testCompile("junit:junit:$junitVersion")
+    testCompile("org.openjdk.jmh:jmh-core:$jmhVersion")
+    testCompile("org.easytesting:fest-assert:${festAssertVersion}")
+    testCompile("com.googlecode.catch-exception:catch-exception:1.2.0")
+    testCompile ("org.springframework:spring-test:${springVersion}")
+    testCompile ("org.spockframework:spock-core:0.7-groovy-2.0")
+
+    testCompile("org.unitils:unitils-core:3.4.2")
+    testCompile("org.unitils:unitils-io:3.4.2");
+    testCompile("pl.pragmatists:JUnitParams:1.0.3")
+}
+uploadArchives {
+    repositories { flatDir { dirs 'repos'
+        } }
+}
+
+
+task generateMetaModel(type: JavaCompile, group: 'build', description: 'metamodel generate') {
+
+    source = sourceSets.main.java
+    classpath = configurations.compile + configurations.jpametamodel
+    options.compilerArgs = ["-proc:only"]
+    destinationDir = sourceSets.generated.java.srcDirs.iterator().next()
+
+    doFirst {
+        logger.warn("Prepare dictionary structures  " +sourceSets.generated.java.srcDirs)
+        //delete(sourceSets.generated.java.srcDirs)
+        //sourceSets.generated.java.srcDirs.mkdirs()
+    }
+}
+compileJava.dependsOn generateMetaModel
+compileJava.source sourceSets.generated.java, sourceSets.main.java
+
+task wrapper(type: Wrapper) { gradleVersion = '2.1' }
